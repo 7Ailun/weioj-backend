@@ -1,12 +1,10 @@
-# 建表脚本
-# @author <a href="https://github.com/liyupi">程序员鱼皮</a>
-# @from <a href="https://yupi.icu">编程导航知识星球</a>
+
 
 -- 创建库
-create database if not exists my_db;
+create database if not exists weioj;
 
 -- 切换库
-use my_db;
+use weioj;
 
 -- 用户表
 create table if not exists user
