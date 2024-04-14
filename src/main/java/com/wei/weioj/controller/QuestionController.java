@@ -1,5 +1,6 @@
 package com.wei.weioj.controller;
 
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.wei.weioj.annotation.AuthCheck;
@@ -10,10 +11,7 @@ import com.wei.weioj.common.ResultUtils;
 import com.wei.weioj.constant.UserConstant;
 import com.wei.weioj.exception.BusinessException;
 import com.wei.weioj.exception.ThrowUtils;
-import com.wei.weioj.model.dto.question.QuestionAddRequest;
-import com.wei.weioj.model.dto.question.QuestionEditRequest;
-import com.wei.weioj.model.dto.question.QuestionQueryRequest;
-import com.wei.weioj.model.dto.question.QuestionUpdateRequest;
+import com.wei.weioj.model.dto.question.*;
 import com.wei.weioj.model.entity.Question;
 import com.wei.weioj.model.entity.User;
 import com.wei.weioj.model.vo.QuestionVO;
@@ -28,7 +26,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 
 /**
- * 帖子接口
+ * 题目接口
  *
  * @author <a href="https://github.com/7Ailun">艾伦</a>
  */
@@ -64,6 +62,10 @@ public class QuestionController {
         List<String> tags = questionAddRequest.getTags();
         if (tags != null) {
             question.setTags(GSON.toJson(tags));
+        }
+        List<JudgeCase> judgeCase = questionAddRequest.getJudgeCase();
+        if(judgeCase != null) {
+            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
         }
         questionService.validQuestion(question, true);
         User loginUser = userService.getLoginUser(request);
@@ -116,6 +118,10 @@ public class QuestionController {
         List<String> tags = questionUpdateRequest.getTags();
         if (tags != null) {
             question.setTags(GSON.toJson(tags));
+        }
+        List<JudgeCase> judgeCase = questionUpdateRequest.getJudgeCase();
+        if(judgeCase != null) {
+            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
         }
         // 参数校验
         questionService.validQuestion(question, false);
@@ -205,6 +211,11 @@ public class QuestionController {
         List<String> tags = questionEditRequest.getTags();
         if (tags != null) {
             question.setTags(GSON.toJson(tags));
+        }
+
+        List<JudgeCase> judgeCase = questionEditRequest.getJudgeCase();
+        if(judgeCase != null) {
+            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
         }
         // 参数校验
         questionService.validQuestion(question, false);

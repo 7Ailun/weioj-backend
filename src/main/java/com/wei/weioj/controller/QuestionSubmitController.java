@@ -23,7 +23,7 @@ import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
 
 /**
- * 帖子点赞接口
+ * 题目提交接口
  *
  * @author <a href="https://github.com/7Ailun">艾伦</a>
  */

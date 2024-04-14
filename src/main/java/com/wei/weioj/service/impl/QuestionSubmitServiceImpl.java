@@ -9,26 +9,26 @@ import com.wei.weioj.exception.BusinessException;
 import com.wei.weioj.mapper.QuestionSubmitMapper;
 import com.wei.weioj.model.dto.questionsubmit.QuestionSubmitAddRequest;
 import com.wei.weioj.model.dto.questionsubmit.QuestionSubmitQueryRequest;
-import com.wei.weioj.model.entity.*;
+import com.wei.weioj.model.entity.Question;
+import com.wei.weioj.model.entity.QuestionSubmit;
+import com.wei.weioj.model.entity.User;
 import com.wei.weioj.model.enums.QuestionSubmitLanguageEnum;
 import com.wei.weioj.model.enums.QuestionSubmitStatusEnum;
 import com.wei.weioj.model.vo.QuestionSubmitVO;
-import com.wei.weioj.model.vo.QuestionSubmitVO;
-import com.wei.weioj.model.vo.UserVO;
 import com.wei.weioj.service.QuestionService;
-import com.wei.weioj.service.QuestionSubmitService;
 import com.wei.weioj.service.QuestionSubmitService;
 import com.wei.weioj.service.UserService;
 import com.wei.weioj.utils.SqlUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
-import org.springframework.aop.framework.AopContext;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.*;
+import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.stream.Collectors;
 
 /**
@@ -116,6 +116,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         QuestionSubmitVO questionSubmitVO = QuestionSubmitVO.objToVo(questionSubmit);
         // 脱敏：仅本人和管理员能看见自己（提交 userId 和登录用户 id 不同）提交的代码
         long userId = loginUser.getId();
+        // 处理脱敏
         if (userId != questionSubmit.getUserId() && !userService.isAdmin(loginUser)) {
             questionSubmitVO.setCode("");
         }
@@ -140,7 +141,7 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
         // 填充信息
         User loginUser = userService.getLoginUser(request);
         List<QuestionSubmitVO> questionSubmitVOList = questionSubmitList.stream().map(questionSubmit -> {
-            QuestionSubmitVO questionSubmitVO = getQuestionSubmitVO(questionSubmit,loginUser);
+            QuestionSubmitVO questionSubmitVO = getQuestionSubmitVO(questionSubmit, loginUser);
             Long userId = questionSubmit.getUserId();
             User user = null;
             if (userIdUserListMap.containsKey(userId)) {

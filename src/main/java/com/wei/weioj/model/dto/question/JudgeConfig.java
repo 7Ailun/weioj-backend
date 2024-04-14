@@ -2,6 +2,9 @@ package com.wei.weioj.model.dto.question;
 
 import lombok.Data;
 
+/**
+ * 题目限制
+ */
 @Data
 public class JudgeConfig {
     /**

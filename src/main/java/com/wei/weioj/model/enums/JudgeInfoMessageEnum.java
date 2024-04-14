@@ -7,7 +7,7 @@ import java.util.List;
 import java.util.stream.Collectors;
 
 /**
- * 文件上传业务类型枚举
+ * 题目信息消息类型枚举
  *
  *  @author <a href="https://github.com/7Ailun">艾伦</a>
  *
