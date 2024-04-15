@@ -2,6 +2,7 @@ package com.wei.weioj.service.impl;
 
 
 import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.core.conditions.Wrapper;
 import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
@@ -11,6 +12,9 @@ import com.wei.weioj.constant.CommonConstant;
 import com.wei.weioj.exception.BusinessException;
 import com.wei.weioj.exception.ThrowUtils;
 import com.wei.weioj.mapper.QuestionMapper;
+import com.wei.weioj.model.dto.question.JudgeCase;
+import com.wei.weioj.model.dto.question.JudgeConfig;
+import com.wei.weioj.model.dto.question.QuestionAddRequest;
 import com.wei.weioj.model.dto.question.QuestionQueryRequest;
 import com.wei.weioj.model.entity.*;
 import com.wei.weioj.model.vo.QuestionVO;
@@ -22,6 +26,7 @@ import com.wei.weioj.utils.SqlUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -50,7 +55,6 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
         String tags = question.getTags();
         String answer = question.getAnswer();
         String judgeCase = question.getJudgeCase();
-        String judgeConfig = question.getJudgeConfig();
         // 创建时，参数不能为空
         if (add) {
             ThrowUtils.throwIf(StringUtils.isAnyBlank(title, content, tags), ErrorCode.PARAMS_ERROR);
@@ -68,7 +72,7 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
     public QuestionVO getQuestionVO(Question question, HttpServletRequest request) {
         QuestionVO questionVO = QuestionVO.objToVo(question);
         // 1. 关联查询用户信息
-        BeanUtil.copyProperties(question,questionVO);
+        BeanUtil.copyProperties(question, questionVO);
         Long userId = question.getUserId();
         User user = null;
         if (userId != null && userId > 0) {
@@ -109,6 +113,30 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
         }).collect(Collectors.toList());
         questionVOPage.setRecords(questionVOList);
         return questionVOPage;
+    }
+
+    @Override
+    public long addQuestion(QuestionAddRequest questionAddRequest, HttpServletRequest request) {
+        Question question = new Question();
+        BeanUtils.copyProperties(questionAddRequest, question);
+        List<String> tags = questionAddRequest.getTags();
+        if (tags != null) {
+            question.setTags(JSONUtil.toJsonStr(tags));
+        }
+        JudgeConfig judgeConfig = questionAddRequest.getJudgeConfig();
+        if (judgeConfig != null) {
+            question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
+        }
+        List<JudgeCase> judgeCase = questionAddRequest.getJudgeCase();
+        if (judgeCase != null) {
+            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
+        }
+        this.validQuestion(question, true);
+        User loginUser = userService.getLoginUser(request);
+        question.setUserId(loginUser.getId());
+        boolean result = this.save(question);
+        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
+        return question.getId();
     }
 
     @Override

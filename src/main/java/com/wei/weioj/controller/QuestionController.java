@@ -57,22 +57,7 @@ public class QuestionController {
         if (questionAddRequest == null) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        Question question = new Question();
-        BeanUtils.copyProperties(questionAddRequest, question);
-        List<String> tags = questionAddRequest.getTags();
-        if (tags != null) {
-            question.setTags(GSON.toJson(tags));
-        }
-        List<JudgeCase> judgeCase = questionAddRequest.getJudgeCase();
-        if(judgeCase != null) {
-            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
-        }
-        questionService.validQuestion(question, true);
-        User loginUser = userService.getLoginUser(request);
-        question.setUserId(loginUser.getId());
-        boolean result = questionService.save(question);
-        ThrowUtils.throwIf(!result, ErrorCode.OPERATION_ERROR);
-        long newQuestionId = question.getId();
+        long newQuestionId = questionService.addQuestion(questionAddRequest, request);
         return ResultUtils.success(newQuestionId);
     }
 
@@ -120,8 +105,12 @@ public class QuestionController {
             question.setTags(GSON.toJson(tags));
         }
         List<JudgeCase> judgeCase = questionUpdateRequest.getJudgeCase();
-        if(judgeCase != null) {
+        if (judgeCase != null) {
             question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
+        }
+        JudgeConfig judgeConfig = questionUpdateRequest.getJudgeConfig();
+        if (judgeConfig != null) {
+            question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
         }
         // 参数校验
         questionService.validQuestion(question, false);
@@ -214,8 +203,12 @@ public class QuestionController {
         }
 
         List<JudgeCase> judgeCase = questionEditRequest.getJudgeCase();
-        if(judgeCase != null) {
+        if (judgeCase != null) {
             question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
+        }
+        JudgeConfig judgeConfig = questionEditRequest.getJudgeConfig();
+        if (judgeConfig != null) {
+            question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
         }
         // 参数校验
         questionService.validQuestion(question, false);
