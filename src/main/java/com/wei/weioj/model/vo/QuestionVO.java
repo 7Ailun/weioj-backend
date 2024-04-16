@@ -5,6 +5,7 @@ import com.baomidou.mybatisplus.annotation.IdType;
 import com.baomidou.mybatisplus.annotation.TableId;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
+import com.wei.weioj.model.dto.question.JudgeCase;
 import com.wei.weioj.model.dto.question.JudgeConfig;
 import com.wei.weioj.model.entity.Question;
 import jdk.nashorn.internal.scripts.JD;
@@ -48,9 +49,14 @@ public class QuestionVO {
     private Integer acceptedNum;
 
     /**
-     * 判题配置（json 对象）
+     * 判题配置
      */
     private JudgeConfig judgeConfig;
+
+    /**
+     * 判题配置
+     */
+    private List<JudgeCase> judgeCase;
 
     /**
      * 创建用户 id

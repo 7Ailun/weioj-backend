@@ -1,6 +1,5 @@
 package com.wei.weioj.controller;
 
-import cn.hutool.json.JSONUtil;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.google.gson.Gson;
 import com.wei.weioj.annotation.AuthCheck;
@@ -11,19 +10,20 @@ import com.wei.weioj.common.ResultUtils;
 import com.wei.weioj.constant.UserConstant;
 import com.wei.weioj.exception.BusinessException;
 import com.wei.weioj.exception.ThrowUtils;
-import com.wei.weioj.model.dto.question.*;
+import com.wei.weioj.model.dto.question.QuestionAddRequest;
+import com.wei.weioj.model.dto.question.QuestionEditRequest;
+import com.wei.weioj.model.dto.question.QuestionQueryRequest;
+import com.wei.weioj.model.dto.question.QuestionUpdateRequest;
 import com.wei.weioj.model.entity.Question;
 import com.wei.weioj.model.entity.User;
 import com.wei.weioj.model.vo.QuestionVO;
 import com.wei.weioj.service.QuestionService;
 import com.wei.weioj.service.UserService;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.BeanUtils;
 import org.springframework.web.bind.annotation.*;
 
 import javax.annotation.Resource;
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 /**
  * 题目接口
@@ -98,32 +98,34 @@ public class QuestionController {
         if (questionUpdateRequest == null || questionUpdateRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        Question question = new Question();
-        BeanUtils.copyProperties(questionUpdateRequest, question);
-        List<String> tags = questionUpdateRequest.getTags();
-        if (tags != null) {
-            question.setTags(GSON.toJson(tags));
-        }
-        List<JudgeCase> judgeCase = questionUpdateRequest.getJudgeCase();
-        if (judgeCase != null) {
-            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
-        }
-        JudgeConfig judgeConfig = questionUpdateRequest.getJudgeConfig();
-        if (judgeConfig != null) {
-            question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
-        }
-        // 参数校验
-        questionService.validQuestion(question, false);
-        long id = questionUpdateRequest.getId();
-        // 判断是否存在
-        Question oldQuestion = questionService.getById(id);
-        ThrowUtils.throwIf(oldQuestion == null, ErrorCode.NOT_FOUND_ERROR);
-        boolean result = questionService.updateById(question);
+        boolean result = questionService.updateQuestion(questionUpdateRequest);
         return ResultUtils.success(result);
     }
 
     /**
      * 根据 id 获取
+     *
+     * @param id
+     * @return
+     */
+    @GetMapping("/get/question")
+    public BaseResponse<Question> getQuestionById(long id, HttpServletRequest request) {
+        if (id <= 0) {
+            throw new BusinessException(ErrorCode.PARAMS_ERROR);
+        }
+        Question question = questionService.getById(id);
+        if (question == null) {
+            throw new BusinessException(ErrorCode.NOT_FOUND_ERROR);
+        }
+        User loginUser = userService.getLoginUser(request);
+        if(question.getUserId().equals(loginUser.getId()) && !userService.isAdmin(request)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        return ResultUtils.success(questionService.getById(question));
+    }
+
+    /**
+     * 根据 id 获取 QuestionVO
      *
      * @param id
      * @return
@@ -139,6 +141,7 @@ public class QuestionController {
         }
         return ResultUtils.success(questionService.getQuestionVO(question, request));
     }
+
 
     /**
      * 分页获取列表（封装类）
@@ -157,6 +160,24 @@ public class QuestionController {
         Page<Question> questionPage = questionService.page(new Page<>(current, size),
                 questionService.getQueryWrapper(questionQueryRequest));
         return ResultUtils.success(questionService.getQuestionVOPage(questionPage, request));
+    }
+
+    /**
+     * 分页获取题目列表（仅管理员）
+     *
+     * @param questionQueryRequest
+     * @param request
+     * @return
+     */
+    @PostMapping("/list/page")
+    @AuthCheck(mustRole = UserConstant.ADMIN_ROLE)
+    public BaseResponse<Page<Question>> listQuestionByPage(@RequestBody QuestionQueryRequest questionQueryRequest,
+                                                           HttpServletRequest request) {
+        long current = questionQueryRequest.getCurrent();
+        long size = questionQueryRequest.getPageSize();
+        Page<Question> questionPage = questionService.page(new Page<>(current, size),
+                questionService.getQueryWrapper(questionQueryRequest));
+        return ResultUtils.success(questionPage);
     }
 
     /**
@@ -195,33 +216,7 @@ public class QuestionController {
         if (questionEditRequest == null || questionEditRequest.getId() <= 0) {
             throw new BusinessException(ErrorCode.PARAMS_ERROR);
         }
-        Question question = new Question();
-        BeanUtils.copyProperties(questionEditRequest, question);
-        List<String> tags = questionEditRequest.getTags();
-        if (tags != null) {
-            question.setTags(GSON.toJson(tags));
-        }
-
-        List<JudgeCase> judgeCase = questionEditRequest.getJudgeCase();
-        if (judgeCase != null) {
-            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
-        }
-        JudgeConfig judgeConfig = questionEditRequest.getJudgeConfig();
-        if (judgeConfig != null) {
-            question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
-        }
-        // 参数校验
-        questionService.validQuestion(question, false);
-        User loginUser = userService.getLoginUser(request);
-        long id = questionEditRequest.getId();
-        // 判断是否存在
-        Question oldQuestion = questionService.getById(id);
-        ThrowUtils.throwIf(oldQuestion == null, ErrorCode.NOT_FOUND_ERROR);
-        // 仅本人或管理员可编辑
-        if (!oldQuestion.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
-            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
-        }
-        boolean result = questionService.updateById(question);
+        boolean result = questionService.editQuestion(questionEditRequest, request);
         return ResultUtils.success(result);
     }
 

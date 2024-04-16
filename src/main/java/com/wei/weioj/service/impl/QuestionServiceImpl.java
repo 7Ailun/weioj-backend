@@ -12,10 +12,7 @@ import com.wei.weioj.constant.CommonConstant;
 import com.wei.weioj.exception.BusinessException;
 import com.wei.weioj.exception.ThrowUtils;
 import com.wei.weioj.mapper.QuestionMapper;
-import com.wei.weioj.model.dto.question.JudgeCase;
-import com.wei.weioj.model.dto.question.JudgeConfig;
-import com.wei.weioj.model.dto.question.QuestionAddRequest;
-import com.wei.weioj.model.dto.question.QuestionQueryRequest;
+import com.wei.weioj.model.dto.question.*;
 import com.wei.weioj.model.entity.*;
 import com.wei.weioj.model.vo.QuestionVO;
 import com.wei.weioj.model.vo.UserVO;
@@ -72,11 +69,14 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
     public QuestionVO getQuestionVO(Question question, HttpServletRequest request) {
         QuestionVO questionVO = QuestionVO.objToVo(question);
         // 1. 关联查询用户信息
-        BeanUtil.copyProperties(question, questionVO);
         Long userId = question.getUserId();
         User user = null;
         if (userId != null && userId > 0) {
             user = userService.getById(userId);
+        }
+        User loginUser = userService.getLoginUser(request);
+        if(!userId.equals(loginUser.getId()) && !userService.isAdmin(loginUser)){
+            questionVO.setJudgeCase(new ArrayList<>());
         }
         UserVO userVO = userService.getUserVO(user);
         questionVO.setUserVO(userVO);
@@ -140,6 +140,63 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
     }
 
     @Override
+    public boolean updateQuestion(QuestionUpdateRequest questionUpdateRequest) {
+        Question question = new Question();
+
+        BeanUtils.copyProperties(questionUpdateRequest, question);
+        List<String> tags = questionUpdateRequest.getTags();
+        if (tags != null) {
+            question.setTags(JSONUtil.toJsonStr(tags));
+        }
+        List<JudgeCase> judgeCase = questionUpdateRequest.getJudgeCase();
+        if (judgeCase != null) {
+            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
+        }
+        JudgeConfig judgeConfig = questionUpdateRequest.getJudgeConfig();
+        if (judgeConfig != null) {
+            question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
+        }
+        // 参数校验
+        this.validQuestion(question, false);
+        long id = questionUpdateRequest.getId();
+        // 判断是否存在
+        Question oldQuestion = this.getById(id);
+        ThrowUtils.throwIf(oldQuestion == null, ErrorCode.NOT_FOUND_ERROR);
+        return this.updateById(question);
+    }
+
+    @Override
+    public boolean editQuestion(QuestionEditRequest questionEditRequest,HttpServletRequest request) {
+        Question question = new Question();
+        BeanUtils.copyProperties(questionEditRequest, question);
+        List<String> tags = questionEditRequest.getTags();
+        if (tags != null) {
+            question.setTags(JSONUtil.toJsonStr(tags));
+        }
+
+        List<JudgeCase> judgeCase = questionEditRequest.getJudgeCase();
+        if (judgeCase != null) {
+            question.setJudgeCase(JSONUtil.toJsonStr(judgeCase));
+        }
+        JudgeConfig judgeConfig = questionEditRequest.getJudgeConfig();
+        if (judgeConfig != null) {
+            question.setJudgeConfig(JSONUtil.toJsonStr(judgeConfig));
+        }
+        // 参数校验
+        this.validQuestion(question, false);
+        User loginUser = userService.getLoginUser(request);
+        long id = questionEditRequest.getId();
+        // 判断是否存在
+        Question oldQuestion = this.getById(id);
+        ThrowUtils.throwIf(oldQuestion == null, ErrorCode.NOT_FOUND_ERROR);
+        // 仅本人或管理员可编辑
+        if (!oldQuestion.getUserId().equals(loginUser.getId()) && !userService.isAdmin(loginUser)) {
+            throw new BusinessException(ErrorCode.NO_AUTH_ERROR);
+        }
+        return this.updateById(question);
+    }
+
+    @Override
     public QueryWrapper<Question> getQueryWrapper(QuestionQueryRequest questionQueryRequest) {
 
         QueryWrapper<Question> queryWrapper = new QueryWrapper<>();
@@ -153,9 +210,11 @@ public class QuestionServiceImpl extends ServiceImpl<QuestionMapper, Question>
         String content = questionQueryRequest.getContent();
         Long userId = questionQueryRequest.getUserId();
         List<String> tagList = questionQueryRequest.getTags();
+        String answer = questionQueryRequest.getAnswer();
         // 拼接查询条件
         queryWrapper.like(StringUtils.isNotBlank(title), "title", title);
         queryWrapper.like(StringUtils.isNotBlank(content), "content", content);
+        queryWrapper.like(StringUtils.isNotBlank(answer), "answer", answer);
         if (CollectionUtils.isNotEmpty(tagList)) {
             for (String tag : tagList) {
                 queryWrapper.like("tags", "\"" + tag + "\"");

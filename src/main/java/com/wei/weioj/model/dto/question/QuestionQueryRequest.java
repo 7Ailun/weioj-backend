@@ -1,7 +1,5 @@
 package com.wei.weioj.model.dto.question;
 
-import com.baomidou.mybatisplus.annotation.IdType;
-import com.baomidou.mybatisplus.annotation.TableId;
 import com.wei.weioj.common.PageRequest;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -27,6 +25,10 @@ public class QuestionQueryRequest extends PageRequest implements Serializable {
      * 内容
      */
     private String content;
+    /**
+     * 答案
+     */
+    private String answer;
 
     /**
      * 标签列表（json 数组）

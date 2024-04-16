@@ -5,7 +5,9 @@ import com.baomidou.mybatisplus.core.conditions.query.QueryWrapper;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.wei.weioj.model.dto.question.QuestionAddRequest;
+import com.wei.weioj.model.dto.question.QuestionEditRequest;
 import com.wei.weioj.model.dto.question.QuestionQueryRequest;
+import com.wei.weioj.model.dto.question.QuestionUpdateRequest;
 import com.wei.weioj.model.entity.Question;
 import com.wei.weioj.model.vo.QuestionVO;
 
@@ -59,4 +61,17 @@ public interface QuestionService extends IService<Question> {
      * @return
      */
     long addQuestion(QuestionAddRequest questionAddRequest, HttpServletRequest request);
+
+    /**
+     * 更新题目信息
+     * @param questionUpdateRequest
+     */
+    boolean updateQuestion(QuestionUpdateRequest questionUpdateRequest);
+
+    /**
+     * 编辑题目信息
+     * @param questionEditRequest
+     * @return
+     */
+    boolean editQuestion(QuestionEditRequest questionEditRequest,HttpServletRequest request);
 }
