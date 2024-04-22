@@ -1,28 +1,23 @@
 package com.wei.weioj.service.codesandbox;
 
-import com.wei.weioj.service.codesandbox.impl.ExampleCodeSandboxService;
-import com.wei.weioj.service.codesandbox.impl.RemoteCodeSandboxService;
-import com.wei.weioj.service.codesandbox.impl.ThirdPartyCodeSandboxService;
+import com.wei.weioj.service.codesandbox.impl.ExampleCodeSandbox;
+import com.wei.weioj.service.codesandbox.impl.RemoteCodeSandbox;
+import com.wei.weioj.service.codesandbox.impl.ThirdPartyCodeSandbox;
 
 /**
  * 沙箱工厂
  */
 public class CodeSandboxFactory {
-    public static CodeSandboxService newInstance(String type) {
-        CodeSandboxService codeSandboxService = null;
+    public static CodeSandbox newInstance(String type) {
         switch (type) {
             case "example":
-                codeSandboxService = new ExampleCodeSandboxService();
-                break;
+                return new ExampleCodeSandbox();
             case "remote":
-                codeSandboxService = new RemoteCodeSandboxService();
+                return new RemoteCodeSandbox();
             case "thirdParty":
-                codeSandboxService = new ThirdPartyCodeSandboxService();
-                break;
+                return new ThirdPartyCodeSandbox();
             default:
-                codeSandboxService = new ExampleCodeSandboxService();
-                break;
+                return new ExampleCodeSandbox();
         }
-        return codeSandboxService;
     }
 }

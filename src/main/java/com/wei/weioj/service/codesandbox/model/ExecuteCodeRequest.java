@@ -1,22 +1,29 @@
 package com.wei.weioj.service.codesandbox.model;
 
-import com.wei.weioj.model.dto.questionsubmit.JudgeInfo;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class CodeSandboxResponse {
+public class ExecuteCodeRequest {
     /**
-     * 判题信息
+     * 输入用例
      */
-    private JudgeInfo judgeInfo;
+    List<String> inputList;
     /**
-     * 信息
+     * 代码
      */
-    private String message;
+    private String code;
+
+    /**
+     * 编程语言
+     */
+    private String language;
+
 }
