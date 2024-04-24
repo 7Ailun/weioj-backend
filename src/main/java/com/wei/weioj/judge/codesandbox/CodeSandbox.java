@@ -1,7 +1,7 @@
-package com.wei.weioj.service.codesandbox;
+package com.wei.weioj.judge.codesandbox;
 
-import com.wei.weioj.service.codesandbox.model.ExecuteCodeRequest;
-import com.wei.weioj.service.codesandbox.model.ExecuteCodeResponse;
+import com.wei.weioj.judge.codesandbox.model.ExecuteCodeRequest;
+import com.wei.weioj.judge.codesandbox.model.ExecuteCodeResponse;
 
 /**
  * 代码沙箱公共接口

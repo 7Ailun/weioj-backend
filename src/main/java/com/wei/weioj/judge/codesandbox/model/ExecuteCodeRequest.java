@@ -1,4 +1,4 @@
-package com.wei.weioj.service.codesandbox.model;
+package com.wei.weioj.judge.codesandbox.model;
 
 import lombok.AllArgsConstructor;
 import lombok.Builder;

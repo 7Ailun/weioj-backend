@@ -6,6 +6,7 @@ import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.wei.weioj.common.ErrorCode;
 import com.wei.weioj.constant.CommonConstant;
 import com.wei.weioj.exception.BusinessException;
+import com.wei.weioj.judge.JudgeService;
 import com.wei.weioj.mapper.QuestionSubmitMapper;
 import com.wei.weioj.model.dto.questionsubmit.QuestionSubmitAddRequest;
 import com.wei.weioj.model.dto.questionsubmit.QuestionSubmitQueryRequest;
@@ -22,6 +23,7 @@ import com.wei.weioj.utils.SqlUtils;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.ObjectUtils;
 import org.apache.commons.lang3.StringUtils;
+import org.springframework.context.annotation.Lazy;
 import org.springframework.stereotype.Service;
 
 import javax.annotation.Resource;
@@ -29,6 +31,7 @@ import javax.servlet.http.HttpServletRequest;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -43,6 +46,9 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
     private UserService userService;
     @Resource
     private QuestionService questionService;
+    @Resource
+    @Lazy
+    private JudgeService judgeService;
 
     @Override
     public long doQuestionSubmit(QuestionSubmitAddRequest questionSubmitAddRequest, User loginUser) {
@@ -77,8 +83,13 @@ public class QuestionSubmitServiceImpl extends ServiceImpl<QuestionSubmitMapper,
 
             throw new BusinessException(ErrorCode.SYSTEM_ERROR, "插入失败，系统错误");
         }
+        Long questionSubmitId = questionSubmit.getId();
+        // 异步调用判题服务
+        CompletableFuture.runAsync(() -> {
+            judgeService.doJudge(questionSubmitId);
+        });
 
-        return questionSubmit.getId();
+        return questionSubmitId;
     }
 
     /**

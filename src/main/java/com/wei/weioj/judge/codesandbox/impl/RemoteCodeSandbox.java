@@ -1,8 +1,8 @@
-package com.wei.weioj.service.codesandbox.impl;
+package com.wei.weioj.judge.codesandbox.impl;
 
-import com.wei.weioj.service.codesandbox.CodeSandbox;
-import com.wei.weioj.service.codesandbox.model.ExecuteCodeRequest;
-import com.wei.weioj.service.codesandbox.model.ExecuteCodeResponse;
+import com.wei.weioj.judge.codesandbox.CodeSandbox;
+import com.wei.weioj.judge.codesandbox.model.ExecuteCodeRequest;
+import com.wei.weioj.judge.codesandbox.model.ExecuteCodeResponse;
 
 /**
  * 远程代码沙箱实现

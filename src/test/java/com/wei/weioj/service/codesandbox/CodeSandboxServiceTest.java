@@ -1,9 +1,12 @@
 package com.wei.weioj.service.codesandbox;
 
 import cn.hutool.core.lang.Assert;
-import com.wei.weioj.service.codesandbox.impl.ExampleCodeSandbox;
-import com.wei.weioj.service.codesandbox.model.ExecuteCodeRequest;
-import com.wei.weioj.service.codesandbox.model.ExecuteCodeResponse;
+import com.wei.weioj.judge.codesandbox.CodeSandbox;
+import com.wei.weioj.judge.codesandbox.CodeSandboxFactory;
+import com.wei.weioj.judge.codesandbox.CodeSandboxProxy;
+import com.wei.weioj.judge.codesandbox.impl.ExampleCodeSandbox;
+import com.wei.weioj.judge.codesandbox.model.ExecuteCodeRequest;
+import com.wei.weioj.judge.codesandbox.model.ExecuteCodeResponse;
 import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Value;
@@ -41,6 +44,19 @@ class CodeSandboxServiceTest {
                 .language("java")
                 .build();
         ExecuteCodeResponse executeCodeResponse = codeSandbox.executeCode(executeCodeRequest);
+        Assert.isNull(executeCodeResponse);
+    }
+    @Test
+    void sandeboxProxy() {
+        CodeSandbox codeSandbox = CodeSandboxFactory.newInstance(type);
+        CodeSandboxProxy codeSandboxProxy = new CodeSandboxProxy(codeSandbox);
+//        log.info(type);
+        ExecuteCodeRequest executeCodeRequest = ExecuteCodeRequest.builder()
+                .inputList(Arrays.asList("1 2", "2 3"))
+                .code("public class Main { public static void main(String[] args) { System.out.println(\"Hello World!\"); } }")
+                .language("java")
+                .build();
+        ExecuteCodeResponse executeCodeResponse = codeSandboxProxy.executeCode(executeCodeRequest);
         Assert.isNull(executeCodeResponse);
     }
 }
